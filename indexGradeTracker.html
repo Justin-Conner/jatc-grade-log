@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JATC Grade Log</title>
+<style>
+  :root {
+    --paper: #faf7f0;
+    --rule: #c9beac;
+    --ink: #1c2b3a;
+    --navy: #16324f;
+    --navy-dark: #0f2338;
+    --copper: #b5651d;
+    --copper-dark: #8f4f16;
+    --calc-bg: #eee7d6;
+    --focus: #2d6ca8;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 2.1rem;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 3px solid var(--navy);
+    padding-bottom: 0.9rem;
+    margin-bottom: 1.75rem;
+  }
+
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: 2rem;
+    letter-spacing: 0.01em;
+    color: var(--navy-dark);
+    margin: 0;
+  }
+
+  .subtitle {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.85rem;
+    color: var(--copper-dark);
+    margin-top: 0.2rem;
+    letter-spacing: 0.02em;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  button, .upload-btn {
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 0.55rem 1rem;
+    border-radius: 3px;
+    border: 1.5px solid var(--navy);
+    background: var(--navy);
+    color: var(--paper);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.05s ease;
+  }
+
+  button:hover, .upload-btn:hover {
+    background: var(--navy-dark);
+  }
+
+  button:active, .upload-btn:active {
+    transform: translateY(1px);
+  }
+
+  .upload-btn {
+    background: transparent;
+    color: var(--navy);
+  }
+
+  .upload-btn:hover {
+    background: var(--navy);
+    color: var(--paper);
+  }
+
+  button:focus-visible, .upload-btn:focus-visible, select:focus-visible, input:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  #uploadInput { display: none; }
+
+  .table-scroll {
+    overflow-x: auto;
+    border: 1.5px solid var(--navy);
+    border-radius: 4px;
+    background: var(--paper);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+  }
+
+  th, td {
+    border: 1px solid var(--rule);
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  thead th {
+    background: var(--navy);
+    color: var(--paper);
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    padding: 0.75rem 0.5rem;
+  }
+
+  thead th:first-child {
+    background: var(--navy-dark);
+  }
+
+  tbody th {
+    text-align: left;
+    background: var(--calc-bg);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.7rem 0.75rem;
+    white-space: nowrap;
+    border-right: 2px solid var(--navy);
+  }
+
+  .score-row td:first-child {
+    background: #fff;
+    border-right: 2px solid var(--navy);
+    padding: 0;
+  }
+
+  .admin-select {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 0.7rem 0.5rem;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: left;
+  }
+
+  .score-input {
+    width: 100%;
+    height: 100%;
+    min-height: 2.6rem;
+    border: none;
+    background: transparent;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.95rem;
+    text-align: center;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .score-input:focus {
+    background: #fff9e8;
+  }
+
+  .calc-row td {
+    background: var(--calc-bg);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.5rem;
+    color: var(--navy-dark);
+  }
+
+  .calc-row.avg-row td,
+  .calc-row.points-row td {
+    font-weight: 600;
+  }
+
+  tbody tr:nth-child(2) td:first-child .admin-select {
+    color: var(--copper-dark);
+  }
+
+  footer {
+    max-width: 920px;
+    margin: 1.5rem auto 0;
+    font-size: 0.8rem;
+    color: #6b6350;
+  }
+
+  .passing-panel {
+    margin-top: 2.25rem;
+    border: 1.5px solid var(--copper);
+    border-radius: 4px;
+    background: #fffdf7;
+    padding: 1.4rem 1.6rem;
+  }
+
+  .passing-panel h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: 1.3rem;
+    color: var(--navy-dark);
+    margin: 0 0 0.25rem;
+  }
+
+  .passing-panel .panel-note {
+    font-size: 0.82rem;
+    color: #6b6350;
+    margin: 0 0 1.1rem;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .stat {
+    border-left: 3px solid var(--copper);
+    padding-left: 0.75rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: #6b6350;
+    letter-spacing: 0.01em;
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-value {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 1.3rem;
+    color: var(--navy-dark);
+    font-weight: 700;
+  }
+
+  .status-line {
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .status-line.pass { color: #2b6b3f; }
+  .status-line.warn { color: var(--copper-dark); }
+  .status-line.fail { color: #a3312a; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.5rem; }
+    body { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>JATC Grade Log</h1>
+      <span class="subtitle">Apprenticeship test tracker</span>
+    </div>
+    <div class="actions">
+      <button id="exportBtn" type="button">Export CSV</button>
+      <label class="upload-btn" for="uploadInput">Upload CSV</label>
+      <input type="file" id="uploadInput" accept=".csv">
+    </div>
+  </header>
+
+  <div class="table-scroll">
+    <table id="gradeTable">
+      <thead>
+        <tr>
+          <th>Teacher</th>
+          <th>Test 1</th>
+          <th>Test 2</th>
+          <th>Test 3</th>
+          <th>Test 4</th>
+          <th>Test 5</th>
+          <th>Test 6</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="score-row" data-row="0">
+          <td>
+            <select class="admin-select" data-row="0">
+              <option value="Dustin">Dustin</option>
+              <option value="Colby">Colby</option>
+              <option value="Kelly">Kelly</option>
+              <option value="Mike">Mike</option>
+              <option value="Dawn">Dawn</option>
+              <option value="Brian">Brian</option>
+            </select>
+          </td>
+          <!-- score inputs generated per column below -->
+        </tr>
+        <tr class="score-row" data-row="1">
+          <td>
+            <select class="admin-select" data-row="1">
+              <option value="Dustin">Dustin</option>
+              <option value="Colby">Colby</option>
+              <option value="Kelly">Kelly</option>
+              <option value="Mike" selected>Mike</option>
+              <option value="Dawn">Dawn</option>
+              <option value="Brian">Brian</option>
+            </select>
+          </td>
+        </tr>
+        <tr class="calc-row total-row">
+          <th>Total</th>
+        </tr>
+        <tr class="calc-row avg-row">
+          <th>Test Average</th>
+        </tr>
+        <tr class="calc-row points-row">
+          <th>Total Points Thus Far</th>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    Scores are whole numbers, 0&ndash;100. Total = sum of both scores for a test. Test Average = cumulative average of all individual scores entered so far (not the Totals). Total Points Thus Far = cumulative sum of Totals.
+  </footer>
+
+  <section class="passing-panel">
+    <h2>Passing Grade Tracker</h2>
+    <p class="panel-note">Semester passing grade: 70% of 1200 possible points (12 individual test scores) = 840 points.</p>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">Points scored so far</div>
+        <div class="stat-value" id="pointsScored">0 / 1200</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Tests recorded</div>
+        <div class="stat-value" id="testsRecorded">0 / 12</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Points still needed</div>
+        <div class="stat-value" id="pointsNeeded">840</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Score needed per remaining test</div>
+        <div class="stat-value" id="neededPerTest">70</div>
+      </div>
+    </div>
+    <div class="status-line" id="statusLine"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const TEST_COUNT = 6;
+  const table = document.getElementById('gradeTable');
+  const scoreRows = table.querySelectorAll('.score-row');
+  const totalRow = table.querySelector('.total-row');
+  const avgRow = table.querySelector('.avg-row');
+  const pointsRow = table.querySelector('.points-row');
+
+  // Build score input cells and calc cells for each column
+  scoreRows.forEach((row) => {
+    const r = row.dataset.row;
+    for (let c = 0; c < TEST_COUNT; c++) {
+      const td = document.createElement('td');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.inputMode = 'numeric';
+      input.pattern = '[0-9]*';
+      input.className = 'score-input';
+      input.dataset.row = r;
+      input.dataset.col = c;
+      input.setAttribute('aria-label', `Score, row ${Number(r) + 1}, test ${c + 1}`);
+      td.appendChild(input);
+      row.appendChild(td);
+    }
+  });
+
+  [totalRow, avgRow, pointsRow].forEach((row, idx) => {
+    const cls = ['total-cell', 'avg-cell', 'points-cell'][idx];
+    for (let c = 0; c < TEST_COUNT; c++) {
+      const td = document.createElement('td');
+      td.className = cls;
+      td.dataset.col = c;
+      row.appendChild(td);
+    }
+  });
+
+  function sanitizeInput(el) {
+    let val = el.value.replace(/[^\d]/g, ''); // digits only, no decimals
+    if (val !== '') {
+      let num = parseInt(val, 10);
+      if (num > 100) num = 100;
+      val = String(num);
+    }
+    el.value = val;
+  }
+
+  function getScore(r, c) {
+    const el = table.querySelector(`.score-input[data-row="${r}"][data-col="${c}"]`);
+    if (!el || el.value === '') return null;
+    return parseInt(el.value, 10);
+  }
+
+  function recalc() {
+    let runningSum = 0;
+    let runningCount = 0;
+    let individualSum = 0;
+    let individualCount = 0;
+
+    for (let c = 0; c < TEST_COUNT; c++) {
+      const v0 = getScore(0, c);
+      const v1 = getScore(1, c);
+      let total = null;
+      if (v0 !== null && v1 !== null) total = v0 + v1;
+
+      const totalCell = table.querySelector(`.total-cell[data-col="${c}"]`);
+      totalCell.textContent = total === null ? '' : total;
+
+      if (total !== null) {
+        runningSum += total;
+        runningCount += 1;
+      }
+
+      if (v0 !== null) { individualSum += v0; individualCount += 1; }
+      if (v1 !== null) { individualSum += v1; individualCount += 1; }
+
+      const avgCell = table.querySelector(`.avg-cell[data-col="${c}"]`);
+      const pointsCell = table.querySelector(`.points-cell[data-col="${c}"]`);
+      avgCell.textContent = individualCount > 0 ? (individualSum / individualCount).toFixed(1) : '';
+      pointsCell.textContent = runningCount > 0 ? runningSum : '';
+    }
+  }
+
+  // ---------- Passing grade tracker ----------
+  const TOTAL_TESTS = 12; // 6 columns x 2 teacher scores
+  const TOTAL_POSSIBLE = TOTAL_TESTS * 100; // 1200
+  const PASS_TARGET = Math.round(TOTAL_POSSIBLE * 0.7); // 840
+
+  const pointsScoredEl = document.getElementById('pointsScored');
+  const testsRecordedEl = document.getElementById('testsRecorded');
+  const pointsNeededEl = document.getElementById('pointsNeeded');
+  const neededPerTestEl = document.getElementById('neededPerTest');
+  const statusLineEl = document.getElementById('statusLine');
+
+  function recalcPassing() {
+    let scoredSum = 0;
+    let filledCount = 0;
+
+    for (let r = 0; r < 2; r++) {
+      for (let c = 0; c < TEST_COUNT; c++) {
+        const v = getScore(r, c);
+        if (v !== null) {
+          scoredSum += v;
+          filledCount += 1;
+        }
+      }
+    }
+
+    const remaining = TOTAL_TESTS - filledCount;
+    const pointsNeededRaw = PASS_TARGET - scoredSum;
+
+    pointsScoredEl.textContent = `${scoredSum} / ${TOTAL_POSSIBLE}`;
+    testsRecordedEl.textContent = `${filledCount} / ${TOTAL_TESTS}`;
+    pointsNeededEl.textContent = Math.max(0, pointsNeededRaw);
+
+    statusLineEl.classList.remove('pass', 'warn', 'fail');
+
+    if (remaining === 0) {
+      neededPerTestEl.textContent = '\u2014';
+      const pct = ((scoredSum / TOTAL_POSSIBLE) * 100).toFixed(1);
+      if (scoredSum >= PASS_TARGET) {
+        statusLineEl.textContent = `All 12 tests recorded. Final score: ${scoredSum} / ${TOTAL_POSSIBLE} (${pct}%) \u2014 Passing.`;
+        statusLineEl.classList.add('pass');
+      } else {
+        statusLineEl.textContent = `All 12 tests recorded. Final score: ${scoredSum} / ${TOTAL_POSSIBLE} (${pct}%) \u2014 Not passing.`;
+        statusLineEl.classList.add('fail');
+      }
+      return;
+    }
+
+    if (pointsNeededRaw <= 0) {
+      neededPerTestEl.textContent = '0';
+      const surplus = Math.abs(pointsNeededRaw);
+      statusLineEl.textContent = `Passing average already secured \u2014 you have a ${surplus}-point cushion with ${remaining} test${remaining === 1 ? '' : 's'} left.`;
+      statusLineEl.classList.add('pass');
+      return;
+    }
+
+    const neededAvg = pointsNeededRaw / remaining;
+
+    if (neededAvg > 100) {
+      neededPerTestEl.textContent = 'Not possible';
+      const maxPossible = scoredSum + remaining * 100;
+      const maxPct = ((maxPossible / TOTAL_POSSIBLE) * 100).toFixed(1);
+      statusLineEl.textContent = `Even a perfect 100 on all remaining tests only reaches ${maxPct}% \u2014 a 70% average is no longer possible.`;
+      statusLineEl.classList.add('fail');
+      return;
+    }
+
+    neededPerTestEl.textContent = neededAvg.toFixed(1);
+    if (neededAvg > 85) {
+      statusLineEl.textContent = `Need an average of ${neededAvg.toFixed(1)} on the remaining ${remaining} test${remaining === 1 ? '' : 's'} \u2014 tight, but possible.`;
+      statusLineEl.classList.add('warn');
+    } else {
+      statusLineEl.textContent = `Need an average of ${neededAvg.toFixed(1)} on the remaining ${remaining} test${remaining === 1 ? '' : 's'} to hit a 70% semester average.`;
+      statusLineEl.classList.add('warn');
+    }
+  }
+
+  table.addEventListener('input', (e) => {
+    if (e.target.classList.contains('score-input')) {
+      sanitizeInput(e.target);
+      recalc();
+      recalcPassing();
+    }
+  });
+
+  table.addEventListener('change', (e) => {
+    if (e.target.classList.contains('admin-select')) {
+      // no recalculation needed for label changes, but kept for future hooks
+    }
+  });
+
+  // ---------- CSV export ----------
+  function csvEscape(field) {
+    const str = String(field ?? '');
+    if (/[",\n]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  }
+
+  function exportCSV() {
+    const header = ['', 'Test 1', 'Test 2', 'Test 3', 'Test 4', 'Test 5', 'Test 6'];
+    const rows = [header];
+
+    scoreRows.forEach((row) => {
+      const r = row.dataset.row;
+      const label = table.querySelector(`.admin-select[data-row="${r}"]`).value;
+      const scores = [];
+      for (let c = 0; c < TEST_COUNT; c++) {
+        const v = getScore(r, c);
+        scores.push(v === null ? '' : v);
+      }
+      rows.push([label, ...scores]);
+    });
+
+    const totals = [];
+    const avgs = [];
+    const points = [];
+    for (let c = 0; c < TEST_COUNT; c++) {
+      totals.push(table.querySelector(`.total-cell[data-col="${c}"]`).textContent);
+      avgs.push(table.querySelector(`.avg-cell[data-col="${c}"]`).textContent);
+      points.push(table.querySelector(`.points-cell[data-col="${c}"]`).textContent);
+    }
+    rows.push(['Total', ...totals]);
+    rows.push(['Test Average', ...avgs]);
+    rows.push(['Total Points Thus Far', ...points]);
+
+    const csv = rows.map((row) => row.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `jatc-grade-log-${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', exportCSV);
+
+  // ---------- CSV import ----------
+  function parseCSVLine(line) {
+    const fields = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; }
+          else { inQuotes = false; }
+        } else {
+          cur += ch;
+        }
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        fields.push(cur);
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    fields.push(cur);
+    return fields;
+  }
+
+  function parseCSV(text) {
+    return text
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== '')
+      .map(parseCSVLine);
+  }
+
+  function importCSV(text) {
+    const rows = parseCSV(text);
+    // rows[0] = header, rows[1] and rows[2] = the two score rows
+    for (let r = 0; r < 2; r++) {
+      const row = rows[r + 1];
+      if (!row) continue;
+      const label = row[0];
+      const select = table.querySelector(`.admin-select[data-row="${r}"]`);
+      const optionExists = Array.from(select.options).some((opt) => opt.value === label);
+      if (optionExists) select.value = label;
+
+      for (let c = 0; c < TEST_COUNT; c++) {
+        const input = table.querySelector(`.score-input[data-row="${r}"][data-col="${c}"]`);
+        const raw = row[c + 1] ?? '';
+        const digitsOnly = String(raw).replace(/[^\d]/g, '');
+        input.value = digitsOnly === '' ? '' : String(Math.min(100, parseInt(digitsOnly, 10)));
+      }
+    }
+    recalc();
+    recalcPassing();
+  }
+
+  document.getElementById('uploadInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => importCSV(evt.target.result);
+    reader.readAsText(file);
+    e.target.value = ''; // allow re-uploading the same file later
+  });
+
+  recalc();
+  recalcPassing();
+})();
+</script>
+</body>
+</html>
